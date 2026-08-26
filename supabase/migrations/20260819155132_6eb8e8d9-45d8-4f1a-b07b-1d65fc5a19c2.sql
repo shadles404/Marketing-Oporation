@@ -1,0 +1,9 @@
+DELETE FROM public.influencer_deliveries;
+DELETE FROM public.influencer_targets;
+DELETE FROM public.lcd_videos;
+DELETE FROM public.expenses;
+DELETE FROM public.payments;
+DELETE FROM public.influencers;
+DELETE FROM public.billboards;
+DELETE FROM public.lcd_screens;
+DELETE FROM public.budgets;
