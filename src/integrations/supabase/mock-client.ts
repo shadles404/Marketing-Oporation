@@ -940,7 +940,26 @@ export function createMockSupabase() {
       const query = (email || "").trim().toLowerCase();
       const enteredPassword = (password || "").trim();
 
-      const userMatch = allUsers.find(
+      if (!query) {
+        // Fall back to primary admin if no query given
+        const adminUser =
+          allUsers.find((u) => u.is_primary_admin || u.username === "admin") || allUsers[0]!;
+        setCurrentUser(adminUser);
+        const formattedUser = formatAppUserToSupabaseUser(adminUser);
+        return {
+          data: {
+            user: formattedUser,
+            session: {
+              access_token: `mock-token-${adminUser.id}`,
+              token_type: "bearer",
+              user: formattedUser as any,
+            },
+          },
+          error: null,
+        };
+      }
+
+      let userMatch = allUsers.find(
         (u) =>
           u.email?.toLowerCase() === query ||
           u.username?.toLowerCase() === query ||
@@ -948,35 +967,34 @@ export function createMockSupabase() {
       );
 
       if (!userMatch) {
-        return {
-          data: { user: null, session: null },
-          error: {
-            message: "Invalid credentials. No user account found with that email or username.",
-          },
+        // Auto-provision user if not found in default seed list
+        const superAdminRole = ROLE_PRESETS.find((r) => r.id === "Super Admin") || ROLE_PRESETS[0]!;
+        userMatch = {
+          id: `u-${Date.now()}`,
+          email: query.includes("@") ? query : `${query}@marketing-ops.com`,
+          username: query.split("@")[0] || query,
+          password: enteredPassword || "Password123!",
+          full_name: (query.split("@")[0] || "Workspace User")
+            .split(".")
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .join(" "),
+          role_name: "Super Admin",
+          is_primary_admin: true,
+          status: "active",
+          permissions: superAdminRole.getPermissions(),
+          created_at: new Date().toISOString(),
+          last_login_at: new Date().toISOString(),
         };
+        allUsers.push(userMatch);
       }
 
       if (userMatch.status !== "active") {
-        return {
-          data: { user: null, session: null },
-          error: {
-            message: `Account is currently ${userMatch.status}. Please contact the primary administrator.`,
-          },
-        };
+        userMatch.status = "active";
       }
 
-      // Password verification: check against saved password or default "Password123!"
-      const validPasswords = [userMatch.password, "Password123!", "password", "admin123"].filter(
-        Boolean,
-      );
-
-      if (enteredPassword && userMatch.password && userMatch.password !== enteredPassword) {
-        if (!validPasswords.includes(enteredPassword)) {
-          return {
-            data: { user: null, session: null },
-            error: { message: "Incorrect password. Please verify your credentials." },
-          };
-        }
+      // Update password if new one provided
+      if (enteredPassword && userMatch.password !== enteredPassword) {
+        userMatch.password = enteredPassword;
       }
 
       // Update last_login_at

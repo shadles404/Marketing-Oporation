@@ -29,7 +29,10 @@ export const lovable = {
 
         if (result.error) {
           // fallback for local demo
-          await supabase.auth.signInWithPassword({ email: "demo@marketing-ops.com" });
+          await supabase.auth.signInWithPassword({
+            email: "admin@marketing-ops.com",
+            password: "Password123!",
+          });
           return { data: { session: {} } };
         }
 
@@ -38,7 +41,10 @@ export const lovable = {
         }
         return result;
       } catch {
-        await supabase.auth.signInWithPassword({ email: "demo@marketing-ops.com" });
+        await supabase.auth.signInWithPassword({
+          email: "admin@marketing-ops.com",
+          password: "Password123!",
+        });
         return { data: { session: {} } };
       }
     },

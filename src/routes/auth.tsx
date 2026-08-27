@@ -97,7 +97,7 @@ function AuthPage() {
                 autoCapitalize="none"
                 autoCorrect="off"
                 required
-                placeholder="e.g. user@marketing-ops.com or username"
+                placeholder="e.g. admin or sarah.finance@marketing-ops.com"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
               />
@@ -110,7 +110,7 @@ function AuthPage() {
                 id="password"
                 type="password"
                 required
-                placeholder="Enter your password"
+                placeholder="Enter your password (e.g. Password123!)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -120,6 +120,47 @@ function AuthPage() {
               {loading ? "Authenticating…" : "Sign In to Workspace"}
             </Button>
           </form>
+
+          {/* Quick Demo Logins */}
+          <div className="mt-5 space-y-2 pt-4 border-t border-border">
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              Quick Role Sign-In
+            </p>
+            <div className="grid grid-cols-2 gap-1.5 text-xs">
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-8 text-[11px] justify-start px-2 font-normal"
+                onClick={() => signInWithCredentials("admin", "Password123!")}
+              >
+                👑 System Admin
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-8 text-[11px] justify-start px-2 font-normal"
+                onClick={() => signInWithCredentials("sjenkins", "Password123!")}
+              >
+                💳 Finance Officer
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-8 text-[11px] justify-start px-2 font-normal"
+                onClick={() => signInWithCredentials("karimt", "Password123!")}
+              >
+                📱 Influencers
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-8 text-[11px] justify-start px-2 font-normal"
+                onClick={() => signInWithCredentials("erostova", "Password123!")}
+              >
+                🏙️ Outdoor Media
+              </Button>
+            </div>
+          </div>
 
           <div className="my-4 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
             <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
