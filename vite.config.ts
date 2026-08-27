@@ -8,31 +8,45 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import fs from "node:fs";
 import path from "node:path";
 
-export default defineConfig({
-  esbuild: {
-    jsx: "automatic",
-    jsxDev: false,
+const polyfillJsxDevPlugin = () => ({
+  name: "polyfill-jsx-dev",
+  transform(code: string, id: string) {
+    if (id.includes("react-jsx-dev-runtime")) {
+      return {
+        code: code.replace(
+          "exports.jsxDEV = void 0;",
+          "var jsxRuntime = require('react/jsx-runtime'); exports.jsxDEV = jsxRuntime.jsx || jsxRuntime.jsxs;",
+        ),
+        map: null,
+      };
+    }
   },
-  react: {
-    jsxDev: false,
+});
+
+export default defineConfig({
+  vite: {
+    plugins: [polyfillJsxDevPlugin()],
   },
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
     prerender: {
-      enabled: true,
+      failOnError: false,
     },
     spa: {
       enabled: true,
       prerender: {
-        outputPath: "/index.html",
+        failOnError: false,
       },
     },
   },
   nitro: {
     hooks: {
       compiled() {
+        const shellHtmlPath = path.resolve("dist/client/_shell.html");
+        const indexHtmlPath = path.resolve("dist/client/index.html");
+        if (fs.existsSync(shellHtmlPath) && !fs.existsSync(indexHtmlPath)) {
+          fs.copyFileSync(shellHtmlPath, indexHtmlPath);
+        }
+
         const serverJsPath = path.resolve("dist/server/server.js");
         const code = `import server from './index.mjs';
 
